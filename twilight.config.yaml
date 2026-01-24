@@ -1,13 +1,13 @@
 # 站点配置
 site:
     # 站点 URL（以斜杠结尾）
-    siteURL: "https://twilight.spr-aachen.com/"
+    siteURL: "http://blog.xw1ndx.online"
     # 站点标题
-    title: "Twilight"
+    title: "风萧萧的吟游诗"
     # 站点副标题
-    subtitle: "Blog Template"
+    subtitle: "自然的颂歌"
     # 语言配置
-    lang: "en"
+    lang: "zh"
     # 翻译配置
     translate:
         # 启用翻译功能
@@ -42,9 +42,9 @@ site:
     # 主题色配置
     themeColor:
         # 主题色的默认色相 (范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345)
-        hue: 255
+        hue: 200
     # 默认主题 ("system" 跟随系统 | "light" 浅色 | "dark" 深色)
-    defaultTheme: "dark"
+    defaultTheme: "system"
     # 壁纸配置
     wallpaper:
         # 模式 ("banner" 横幅 | "fullscreen" 全屏 | "none" 纯色)
@@ -77,16 +77,16 @@ site:
                 # 在主页显示文本
                 enable: true
                 # 主标题
-                title: "Twilight"
+                title: "执笔仗剑风萧萧"
                 # 副标题，支持单个字符串或字符串数组
                 subtitle:
-                    - "Illuminate Our Paths"
+                    - "Valar Morghulis"
                 # 副标题打字机效果
                 typewriter:
                     # 启用副标题打字机效果
                     enable: true
                     # 打字速度 (毫秒)
-                    speed: 111
+                    speed: 300
                     # 删除速度 (毫秒)
                     deleteSpeed: 51
                     # 完全显示后的暂停时间 (毫秒)
@@ -150,7 +150,7 @@ site:
 # Umami统计配置
 umami:
     # 是否显示Umami统计
-    enabled: false
+    enabled: true
     # UmamiCloudAPI地址
     baseUrl: "https://api.umami.is"
     # API密钥 (可用环境变量覆盖)
@@ -168,13 +168,13 @@ navbar:
             "Archive"
         - # 一级导航链接 - 展览 (自定义)
             # 导航名称
-            name: "Exhibition"
+            name: "展览"
             # 导航链接
             url: "/exhibition/"
             # 导航图标
             icon: "material-symbols:person"
             # 导航描述
-            description: "A collection of my creative works and experiences"
+            description: "吟游者的过往"
             # 子链接
             children:
                 - # 二级导航链接 - 项目 (预设)
@@ -290,9 +290,9 @@ sidebar:
 # 资料配置
 profile:
     # 头像配置 (相对于 /public 目录)
-    avatar: "/assets/images/avatar.jpg"
+    avatar: "/assets/images/fyg.jpg"
     # 信息配置
-    name: "Twilight"
+    name: "执笔仗剑风萧萧"
     # 简介配置
     bio: "Hi"
     # 链接配置
@@ -303,16 +303,20 @@ profile:
             # 图标
             icon: "fa6-brands:github"
             # 链接
-            url: "https://github.com/Spr-Aachen/Twilight"
+            url: "https://github.com/1XW1nDX1"
+        - 
+            name: "Bilibili"
+            icon: "fa6-brands:bilibili"
+            url: "https://space.bilibili.com/307455705?spm_id_from=333.1007.0.0"
 
 # 公告配置
 announcement:
     # 公告标题
-    title: "Announcement"
+    title: "公告"
     # 公告内容
-    content: "Welcome to my blog!"
+    content: "欢迎聆听我的乐章"
     # 允许用户关闭公告
-    closable: true
+    closable: false
     # 链接配置
     link:
         # 启用链接
@@ -351,7 +355,7 @@ post:
             # 环境 ID
             envId: "https://twikoo.vercel.app"
             # 语言
-            lang: "en"
+            lang: "zh"
 
 # 页脚配置
 footer:
