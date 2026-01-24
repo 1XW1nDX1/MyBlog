@@ -18,6 +18,7 @@ import remarkDirective from "remark-directive"; /* Handle directives */
 import remarkGithubAdmonitionsToDirectives from "remark-github-admonitions-to-directives";
 import remarkMath from "remark-math";
 import remarkSectionize from "remark-sectionize";
+import remarkEmoji from "remark-emoji";
 
 import { siteConfig } from "./src/config.ts";
 import { pluginCollapseButton } from "./src/plugins/expressive-code/collapse-button.ts";
@@ -146,6 +147,7 @@ export default defineConfig({
             remarkSectionize,
             parseDirectiveNode,
             remarkMermaid,
+            remarkEmoji,
         ],
         rehypePlugins: [
             rehypeKatex,
