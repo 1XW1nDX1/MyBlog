@@ -36,7 +36,7 @@ site:
         # 示例字体配置 - Zen Maru Gothic
         "Example - ZenMaruGothic":
             # 字体源 (字体 CSS 链接 | 字体文件路径)
-            src: "./public/assets/fonts/Yozai-Regular.woff2"
+            src: "/assets/fonts/Yozai-Regular.woff2"
             # 字体名 (font-family)
             family: "Yozai"
     # 主题色配置
