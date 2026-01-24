@@ -1,17 +1,21 @@
-# About This Site
+# About……Everything！
 
-Twilight is a CMS integrated static blog template built with [Astro](https://astro.build) framework.
+## 自我介绍
+
+我是一名来自**中国海洋大学**的学生，我的ID是执笔仗剑风萧萧，或者XW1nDX
+
+刚上大学差不多一年了，我的感悟还是挺多的，我发现周边的大佬还是很多的
+
+不少人在中学、甚至小学就已经开始了计算机的学习，来到大学以后优势是非常大的
+
+我的身边就有不少大一就开始打 ACM、蓝桥杯的选手，也有已经做过无数项目的哥们
+
+但更多人的基础还只是停留在会用电脑上，我也就是一员，只能说比正常人会的多一点，但是又不多
+
+在这个博客里，我有时候会分享一些我觉得有意思的项目和教学文档，大家可以学习参考一下
+
+## 博客信息
+
+Twilight 是一个基于 [Astro](https://astro.build) 的静态博客主题，这是它的github仓库。
 
 ::github{repo="Spr-Aachen/Twilight"}
-
-
-## Milestones
-
-- Integrated content management system in [#1](https://github.com/Spr-Aachen/Twilight/pull/1)
-- Seamless wallpaper mode switching in [#2](https://github.com/Spr-Aachen/Twilight/pull/2)
-- Dynamic content container response in [#47](https://github.com/Spr-Aachen/Twilight/pull/47)
-- Seamless page component loading in [#48](https://github.com/Spr-Aachen/Twilight/pull/48)
-- Smart music playback handling in [#49](https://github.com/Spr-Aachen/Twilight/pull/49)
-- Infinite-level navigation system in [#50](https://github.com/Spr-Aachen/Twilight/pull/50)
-- Comprehensive statistics dashboard in [#51](https://github.com/Spr-Aachen/Twilight/pull/51)
-- Low-barrier configuration scheme in [#58](https://github.com/Spr-Aachen/Twilight/pull/58)

@@ -36,9 +36,9 @@ site:
         # 示例字体配置 - Zen Maru Gothic
         "Example - ZenMaruGothic":
             # 字体源 (字体 CSS 链接 | 字体文件路径)
-            src: "https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic&display=swap"
+            src: "./public/assets/fonts/Yozai-Regular.woff2"
             # 字体名 (font-family)
-            family: "Zen Maru Gothic"
+            family: "Yozai"
     # 主题色配置
     themeColor:
         # 主题色的默认色相 (范围从 0 到 360。例如：红色：0，青色：200，蓝绿色：250，粉色：345)
@@ -153,10 +153,6 @@ umami:
     enabled: true
     # UmamiCloudAPI地址
     baseUrl: "https://api.umami.is"
-    # API密钥 (可用环境变量覆盖)
-    apiKey: ""
-    # 要插入的Script (可用环境变量覆盖)
-    scripts: ""
 
 # 导航栏配置
 navbar:

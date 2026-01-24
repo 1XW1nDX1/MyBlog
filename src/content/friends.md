@@ -2,14 +2,14 @@
 
 ## How to Apply
 
-Please send your website information to: xxx@xxx.com
+请发送你的网页信息给我的邮箱: guoyifan@ouc.stu.edu.com
 
-Email Subject:
+邮件主题:
 ```
 Request to Add Friend
 ```
 
-Email Content (Template):
+正文 (示例):
 ```
 Site Name: [Your Site Name]
 Site Desc: [Your Site Description]
