@@ -48,7 +48,8 @@ jobs:
           sudo apt-get install -y xvfb libxi6 libxrender1 libxtst6 libnss3 libasound2t64
 
       - name: Run Crawler Script
-        # 确保路径正确
+        env:
+          JD_COOKIE: ${{ secrets.JD_COOKIE }}  # 把 Secret 传进去
         run: python Crawler/AutoCrawler.py
 
       - name: Commit and Push

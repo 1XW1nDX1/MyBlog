@@ -50,9 +50,24 @@ def crawl_jd_data():
         
         
         # 实例化浏览器
-        cookies = 'pt_key=AAJpdcJ-ADAQLmg0N4rJ_YguZ75M9bKgUIGPLOWTgor819BJY9aQpZtLEi34B2SNOKL6zqOcOBU; pt_pin=jd_CtWcPYgxylRA; domain=jd.com'
         edge = ChromiumPage(co)
-        edge.set.cookies(cookies)
+        
+        jd_cookie = os.getenv('JD_COOKIE') 
+    
+        if jd_cookie:
+            print("🍪 检测到 Cookie 配置，正在注入身份凭证...")
+            # 注入 Cookie (domain 必须设置对，否则无效)
+            # 格式化一下，确保 DrissionPage 能吃进去
+            cookie_list = []
+            for item in jd_cookie.split(';'):
+                if '=' in item:
+                    k, v = item.split('=', 1)
+                    cookie_list.append({'name': k.strip(), 'value': v.strip(), 'domain': '.jd.com'})
+            
+            edge.set.cookies(cookie_list)
+        else:
+            print("⚠️ 未检测到 JD_COOKIE，正在尝试裸奔（大概率会被拦截）...")
+
         captured_data = []
 
         try:
