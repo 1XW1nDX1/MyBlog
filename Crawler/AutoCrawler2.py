@@ -55,6 +55,7 @@ def crawl_jd_data():
 
     with sync_playwright() as p:
         # 启动浏览器 (headless=True 是默认的，适合服务器)
+        cookies = 'pt_key=AAJpdcJ-ADAQLmg0N4rJ_YguZ75M9bKgUIGPLOWTgor819BJY9aQpZtLEi34B2SNOKL6zqOcOBU; pt_pin=jd_CtWcPYgxylRA; domain=jd.com'
         browser = p.chromium.launch(headless=True)
         # 创建上下文，伪装 User-Agent 防止被秒封
         context = browser.new_context(

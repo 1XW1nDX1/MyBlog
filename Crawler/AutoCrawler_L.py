@@ -21,22 +21,35 @@ TODAY = datetime.date.today().strftime('%Y-%m-%d')
 
 print(f"📂 路径检查:\n- 脚本位置: {CURRENT_DIR}\n- 博客输出: {BLOG_POST_PATH}\n- 数据存储: {DATA_DIR}")
 
-# ================= 🕷️ 爬虫部分 (多页翻页版) =================
+# ================= 🕷️ 爬虫部分 (修复云端启动报错) =================
 def crawl_jd_data():
-    print(f"[{TODAY}] 哀酱正在启动 Edge 浏览器，准备模拟人类抓取 10 页数据...")
+    print(f"[{TODAY}] 哀酱正在启动 Edge 浏览器 (云端兼容模式)...")
     co = ChromiumOptions()
     
-    # [GitHub Actions 适配]
+    # [关键 1] 指定 Edge 路径 (Linux 环境)
     if os.path.exists('/usr/bin/microsoft-edge-stable'):
         co.set_browser_path('/usr/bin/microsoft-edge-stable')
-        
-    co.set_argument('--no-sandbox')
-    co.set_argument('--disable-gpu')
     
+    # [关键 2] 显式使用 'new' 模式的 headless，解决报错核心问题
+    co.set_argument('--headless=new') 
+    
+    # [关键 3] 必须添加的 Linux/CI 专用参数
+    co.set_argument('--no-sandbox')           # Linux 必加
+    co.set_argument('--disable-gpu')          # 禁用 GPU 渲染
+    co.set_argument('--disable-dev-shm-usage') # 防止因内存不足导致崩溃
+    
+    # [关键 4] 指定一个独立的用户目录，防止权限冲突
+    # 在当前目录下生成一个临时文件夹存放浏览器缓存
+    user_data_path = os.path.join(CURRENT_DIR, 'browser_user_data')
+    co.set_user_data_path(user_data_path)
+
     # 实例化浏览器
-    cookies = 'pt_key=AAJpdcJ-ADAQLmg0N4rJ_YguZ75M9bKgUIGPLOWTgor819BJY9aQpZtLEi34B2SNOKL6zqOcOBU; pt_pin=jd_CtWcPYgxylRA; domain=jd.com'
-    edge = ChromiumPage(co)
-    edge.set.cookies(cookies)
+    try:
+        edge = ChromiumPage(co)
+    except Exception as e:
+        print(f"❌ 浏览器启动严重失败: {e}")
+        # 如果启动失败，返回空列表，避免整个脚本崩溃
+        return []
     captured_data = []
 
     try:
