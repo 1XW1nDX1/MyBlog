@@ -19,11 +19,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.14'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
           # 1. 安装 python 库
           pip install pandas playwright
           # 2. 安装 Playwright 需要的浏览器内核 (Chromium)
@@ -32,7 +32,7 @@ jobs:
           playwright install-deps chromium
 
       - name: Run Crawler Script
-        run: python Crawler/Daily.py
+        run: python3 Crawler/AutoCrawler2.py
 
       - name: Commit and Push
         run: |
