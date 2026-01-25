@@ -41,7 +41,7 @@ jobs:
 
       - name: Run Crawler Script
         # [关键路径修改] 因为脚本在 Crawler 文件夹下
-        run: python Crawler/Daily.py
+        run: python Crawler/AutoCrawler.py
 
       - name: Commit and Push
         run: |
