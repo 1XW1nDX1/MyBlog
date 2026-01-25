@@ -127,6 +127,25 @@ def crawl_jd_data():
                 
         except Exception as e:
             print(f"❌ 严重错误: {e}")
+            print(f"❌ 严重错误: {e}")
+            
+            # [关键新增] 报错时的现场取证！
+            print(f"🔍 [调试信息] 当前 URL: {edge.url}")
+            print(f"🔍 [调试信息] 当前 标题: {edge.title}")
+            
+            # 截图保存到 data_storage 文件夹，稍后通过 Actions 上传
+            screenshot_path = os.path.join(DATA_DIR, 'error_screenshot.png')
+            edge.get_screenshot(path=screenshot_path)
+            print(f"📸 错误截图已保存: {screenshot_path}")
+            
+            # 保存 HTML 源码，方便分析结构
+            html_path = os.path.join(DATA_DIR, 'error_page.html')
+            with open(html_path, 'w', encoding='utf-8') as f:
+                f.write(edge.html)
+            print(f"📄 错误页面源码已保存: {html_path}")
+            
+            # 重新抛出异常，让 Action 显示红色失败状态
+            raise e
         finally:
             edge.quit()
             print("浏览器已关闭，虚拟显示器即将释放。")
