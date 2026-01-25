@@ -30,12 +30,13 @@ def crawl_jd_data():
     if os.path.exists('/usr/bin/microsoft-edge-stable'):
         co.set_browser_path('/usr/bin/microsoft-edge-stable')
         
-    co.set_headless(True)
     co.set_argument('--no-sandbox')
     co.set_argument('--disable-gpu')
     
     # 实例化浏览器
+    cookies = 'pt_key=AAJpdcJ-ADAQLmg0N4rJ_YguZ75M9bKgUIGPLOWTgor819BJY9aQpZtLEi34B2SNOKL6zqOcOBU; pt_pin=jd_CtWcPYgxylRA; domain=jd.com'
     edge = ChromiumPage(co)
+    edge.set.cookies(cookies)
     captured_data = []
 
     try:
@@ -60,7 +61,7 @@ def crawl_jd_data():
             # [动作 2] 等待数据包
             # 这里的 count=4 是为了保险，京东一页通常会有 2-4 个相关的数据包
             print("等待数据包加载...")
-            resp_list = edge.listen.wait(count=4, timeout=60)
+            resp_list = edge.listen.wait(count=5, timeout=60)
             
             if isinstance(resp_list, bool):
                 print(f"⚠️ 第 {page} 页等待超时，可能数据加载不全。")
