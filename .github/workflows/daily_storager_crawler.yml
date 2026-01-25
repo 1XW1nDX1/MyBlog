@@ -22,9 +22,11 @@ jobs:
           # 1. 下载微软GPG公钥
           curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
           sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
+          
           # 2. 添加软件源
-          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-dev.list'
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge.list'
           sudo rm microsoft.gpg
+          
           # 3. 安装 Edge
           sudo apt-get update
           sudo apt-get install -y microsoft-edge-stable
@@ -32,29 +34,31 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: '3.14' # 建议用 3.12，虽然 3.14 能跑但可能会有库兼容隐患
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install pandas DrissionPage pyvirtualdisplay
+          
+          # [关键修复] 适配 Ubuntu 24.04 环境
           sudo apt-get update
-          sudo apt-get install -y xvfb libxi6 libgconf-2-4 libxrender1 libxtst6 libnss3 libasound2
+          # libgconf-2-4 已被废弃，移除
+          # libasound2 改名为 libasound2t64
+          sudo apt-get install -y xvfb libxi6 libxrender1 libxtst6 libnss3 libasound2t64
 
       - name: Run Crawler Script
-        # [关键路径修改] 因为脚本在 Crawler 文件夹下
-        run: python3 Crawler/AutoCrawler.py
+        # 确保路径正确
+        run: python Crawler/AutoCrawler.py
 
       - name: Commit and Push
         run: |
           git config --global user.name 'Haibara-Ai-Bot'
           git config --global user.email 'haibara@aptx4869.net'
           
-          # [关键] 添加生成的文件
-          # 1. 博客文章
+          # 添加文件
           git add src/content/posts/memory-monitor.mdx
-          # 2. 数据文件 (在 Crawler/data_storage 下)
           git add Crawler/data_storage/
           
-          # 检查是否有变更，有则提交
+          # 提交
           git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update: Daily memory report [skip ci]" && git push)
