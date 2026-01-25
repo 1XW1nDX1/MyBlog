@@ -4,9 +4,11 @@ import re
 import os
 import datetime
 import time
-import random  # [新增] 用于生成随机延时
+import random
 import pandas as pd
 from DrissionPage import ChromiumPage, ChromiumOptions
+# [新增] 引入虚拟显示器库
+from pyvirtualdisplay import Display
 
 # ================= 🔧 路径智能配置区域 =================
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,107 +23,113 @@ TODAY = datetime.date.today().strftime('%Y-%m-%d')
 
 print(f"📂 路径检查:\n- 脚本位置: {CURRENT_DIR}\n- 博客输出: {BLOG_POST_PATH}\n- 数据存储: {DATA_DIR}")
 
-# ================= 🕷️ 爬虫部分 (多页翻页版) =================
+# ================= 🕷️ 爬虫部分 (Xvfb + 多页翻页版) =================
 def crawl_jd_data():
-    print(f"[{TODAY}] 哀酱正在启动 Edge 浏览器，准备模拟人类抓取 10 页数据...")
-    co = ChromiumOptions()
+    print(f"[{TODAY}] 哀酱正在启动虚拟显示环境 (Xvfb)...")
     
-    # [GitHub Actions 适配]
-    if os.path.exists('/usr/bin/microsoft-edge-stable'):
-        co.set_browser_path('/usr/bin/microsoft-edge-stable')
+    # [新增] 启动虚拟显示器 (模拟 1080P 屏幕)
+    # visible=False 表示不显示真实窗口（在服务器后台运行）
+    # size=(1920, 1080) 强制渲染大窗口，确保所有元素都能被 locate 到
+    with Display(visible=False, size=(1920, 1080)) as disp:
         
-    co.set_argument('--no-sandbox')
-    co.set_argument('--disable-gpu')
-    
-    # 实例化浏览器
-    cookies = 'pt_key=AAJpdcJ-ADAQLmg0N4rJ_YguZ75M9bKgUIGPLOWTgor819BJY9aQpZtLEi34B2SNOKL6zqOcOBU; pt_pin=jd_CtWcPYgxylRA; domain=jd.com'
-    edge = ChromiumPage(co)
-    edge.set.cookies(cookies)
-    captured_data = []
-
-    try:
-        # 1. 启动监听 (只用启动一次)
-        edge.listen.start("?appid=search-pc-java&t=")
+        print("🖥️ 虚拟显示器已就绪，正在启动 Edge 浏览器...")
+        co = ChromiumOptions()
         
-        # 2. 访问首页
-        print("正在访问京东搜索页...")
-        edge.get("https://search.jd.com/Search?keyword=%E5%86%85%E5%AD%98%E6%9D%A1&enc=utf-8&wq=neicunt")
+        # [GitHub Actions 适配]
+        if os.path.exists('/usr/bin/microsoft-edge-stable'):
+            co.set_browser_path('/usr/bin/microsoft-edge-stable')
+            
+        co.set_argument('--no-sandbox')
+        co.set_argument('--disable-gpu')
         
-        # --- 循环抓取 10 页 ---
-        target_pages = 10
-        for page in range(1, target_pages + 1):
-            print(f"\n--- 正在处理第 {page}/{target_pages} 页 ---")
-            
-            # [动作 1] 滚动到底部触发懒加载
-            # 京东不仅下一页需要加载，当前页的后30个商品也需要滚到底部才会出来
-            print("正在缓慢滚动页面...")
-            next_p = edge.ele('text=下一页')
-            edge.scroll.to_see(next_p)
-            
-            # [动作 2] 等待数据包
-            # 这里的 count=4 是为了保险，京东一页通常会有 2-4 个相关的数据包
-            print("等待数据包加载...")
-            resp_list = edge.listen.wait(count=5, timeout=60)
-            
-            if isinstance(resp_list, bool):
-                print(f"⚠️ 第 {page} 页等待超时，可能数据加载不全。")
-                resp_list = []
+        # [修改] 关键点：这里必须设为 False！
+        # 因为我们已经有了 Xvfb 提供的虚拟屏幕，不需要浏览器自带的无头模式了
+        # 这样 DrissionPage 就能通过坐标精准点击元素
+        
+        co.set_argument('--window-size=1920,1080')
+        
+        
+        # 实例化浏览器
+        cookies = 'pt_key=AAJpdcJ-ADAQLmg0N4rJ_YguZ75M9bKgUIGPLOWTgor819BJY9aQpZtLEi34B2SNOKL6zqOcOBU; pt_pin=jd_CtWcPYgxylRA; domain=jd.com'
+        edge = ChromiumPage(co)
+        edge.set.cookies(cookies)
+        captured_data = []
 
-            # [动作 3] 解析当前页数据
-            page_count = 0
-            for resp in resp_list:
-                raw_body = resp.response.body
-                # 尝试解析可能存在的 JSONP 或 字符串格式
-                if isinstance(raw_body, str):
-                    try:
-                        # 清洗 jQuery(...) 这种包裹
-                        if raw_body.strip().startswith('jQuery') or raw_body.strip().endswith(')'):
-                            raw_body = raw_body[raw_body.find('{'):raw_body.rfind('}')+1]
-                        json_data = json.loads(raw_body)
-                    except: continue
-                else:
-                    json_data = raw_body
-
-                # 提取数据
-                if isinstance(json_data, dict) and "data" in json_data and isinstance(json_data["data"], dict) and "wareList" in json_data["data"]:
-                    for item in json_data["data"]["wareList"]:
-                        title = item.get('wareName', '')
-                        price = item.get('realPrice', '0')
-                        link = f"https://item.jd.com/{item.get('wareId')}.html"
-                        clean_title = re.sub('<.*?>', '', title)
-                        
-                        captured_data.append({
-                            'date': TODAY, 'title': clean_title, 'price': price, 'link': link
-                        })
-                        page_count += 1
+        try:
+            # 1. 启动监听 (只用启动一次)
+            edge.listen.start("?appid=search-pc-java&t=")
             
-            print(f"✅ 第 {page} 页抓取完成，本页捕获约 {page_count} 条数据。")
-
-            # [动作 4] 如果不是最后一页，点击“下一页”
-            if page < target_pages:
-                # 定位“下一页”按钮 (class 为 pn-next)
-                next_btn = edge.ele('text=下一页')
+            # 2. 访问首页
+            print("正在访问京东搜索页...")
+            edge.get("https://search.jd.com/Search?keyword=%E5%86%85%E5%AD%98%E6%9D%A1&enc=utf-8&wq=neicunt")
+            
+            # --- 循环抓取 10 页 ---
+            target_pages = 10
+            for page in range(1, target_pages + 1):
+                print(f"\n--- 正在处理第 {page}/{target_pages} 页 ---")
                 
-                if next_btn:
-                    print("找到下一页按钮，准备点击...")
-                    next_btn.click() # 点击翻页
+                # [动作 1] 滚动到底部触发懒加载
+                print("正在缓慢滚动页面...")
+                # 因为有虚拟界面，scroll.to_see 现在会非常精准
+                next_p = edge.ele('text=下一页')
+                edge.scroll.to_see(next_p)
+                
+                # [动作 2] 等待数据包
+                print("等待数据包加载...")
+                resp_list = edge.listen.wait(count=5, timeout=60)
+                
+                if isinstance(resp_list, bool):
+                    print(f"⚠️ 第 {page} 页等待超时，可能数据加载不全。")
+                    resp_list = []
+
+                # [动作 3] 解析当前页数据
+                page_count = 0
+                for resp in resp_list:
+                    raw_body = resp.response.body
+                    if isinstance(raw_body, str):
+                        try:
+                            if raw_body.strip().startswith('jQuery') or raw_body.strip().endswith(')'):
+                                raw_body = raw_body[raw_body.find('{'):raw_body.rfind('}')+1]
+                            json_data = json.loads(raw_body)
+                        except: continue
+                    else:
+                        json_data = raw_body
+
+                    if isinstance(json_data, dict) and "data" in json_data and isinstance(json_data["data"], dict) and "wareList" in json_data["data"]:
+                        for item in json_data["data"]["wareList"]:
+                            title = item.get('wareName', '')
+                            price = item.get('realPrice', '0')
+                            link = f"https://item.jd.com/{item.get('wareId')}.html"
+                            clean_title = re.sub('<.*?>', '', title)
+                            
+                            captured_data.append({
+                                'date': TODAY, 'title': clean_title, 'price': price, 'link': link
+                            })
+                            page_count += 1
+                
+                print(f"✅ 第 {page} 页抓取完成，本页捕获约 {page_count} 条数据。")
+
+                # [动作 4] 如果不是最后一页，点击“下一页”
+                if page < target_pages:
+                    next_btn = edge.ele('text=下一页')
                     
-                    # [关键] 模拟人类休息
-                    # 随机休眠 2-5 秒，既等待页面加载，又防止被封
-                    sleep_time = random.uniform(2, 5)
-                    print(f"😴 哀酱累了，休息 {sleep_time:.2f} 秒再继续...")
-                    time.sleep(sleep_time)
-                    
-                    # 页面加载后，监听器会自动准备接收新的包
-                    # 这里不需要重新 start，DrissionPage 会继续监听
-                else:
-                    print("❌ 未找到下一页按钮，可能已经到底或被反爬，提前结束。")
-                    break
-            
-    except Exception as e:
-        print(f"❌ 严重错误: {e}")
-    finally:
-        edge.quit()
+                    if next_btn:
+                        print("找到下一页按钮，准备点击...")
+                        # 这里的点击现在是在虚拟屏幕上进行的真实点击
+                        next_btn.click() 
+                        
+                        sleep_time = random.uniform(2, 5)
+                        print(f"😴 哀酱累了，休息 {sleep_time:.2f} 秒再继续...")
+                        time.sleep(sleep_time)
+                    else:
+                        print("❌ 未找到下一页按钮，可能已经到底或被反爬，提前结束。")
+                        break
+                
+        except Exception as e:
+            print(f"❌ 严重错误: {e}")
+        finally:
+            edge.quit()
+            print("浏览器已关闭，虚拟显示器即将释放。")
 
     print(f"\n🎉 全部抓取结束，共捕获 {len(captured_data)} 条数据。")
     return captured_data
@@ -153,7 +161,6 @@ def process_data(raw_data):
 
 # ================= 💾 智能存储 (保持不变) =================
 def smart_save(df_today):
-    # 1. 更新趋势表
     daily_summary = df_today.groupby(['date', 'category'])['price'].mean().round(1).reset_index()
     if os.path.exists(TREND_FILE):
         df_trend = pd.read_csv(TREND_FILE)
@@ -163,7 +170,6 @@ def smart_save(df_today):
         df_trend = daily_summary
     df_trend.to_csv(TREND_FILE, index=False)
 
-    # 2. 更新原始表
     if os.path.exists(RAW_FILE):
         df_raw_old = pd.read_csv(RAW_FILE)
         df_raw_old = df_raw_old[df_raw_old['date'] != TODAY]
@@ -183,7 +189,6 @@ def generate_blog(df_trend, df_raw_all):
     df_today_raw = df_raw_all[df_raw_all['date'] == TODAY]
     if df_today_raw.empty: return
 
-    # 折线图数据
     pivot_df = df_trend.pivot_table(index='date', columns='category', values='price', aggfunc='mean').round(1)
     if not pivot_df.empty:
         dates = pivot_df.index.tolist()
@@ -195,7 +200,6 @@ def generate_blog(df_trend, df_raw_all):
     json_series = json.dumps(series, ensure_ascii=False)
     json_legends = json.dumps(pivot_df.columns.tolist(), ensure_ascii=False)
 
-    # JS 逻辑
     js_logic = f"""
       document.addEventListener('DOMContentLoaded', function () {{
         var chartDom = document.getElementById('main-chart');
@@ -215,7 +219,6 @@ def generate_blog(df_trend, df_raw_all):
       }});
     """
 
-    # 概览数据
     specs = {'笔记本': [16, 32], '台式': [16, 32, 64], '服务器': [32, 64, 128]}
     dates_raw = sorted(df_raw_all['date'].unique())
     yesterday = dates_raw[-2] if len(dates_raw) >= 2 else None
@@ -242,7 +245,6 @@ def generate_blog(df_trend, df_raw_all):
             overview_md += f"- **{cap}G**: {val} {trend_str}\n"
         overview_md += "\n"
 
-    # 拼接
     mdx_content = f"""---
 title: "京东内存条价格日报 ({TODAY})"
 description: "DDR4/DDR5 内存条价格监控，含 16G/32G/64G 分规格均价分析。"

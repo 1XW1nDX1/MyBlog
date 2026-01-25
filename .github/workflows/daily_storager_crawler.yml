@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Microsoft Edge
         run: |
@@ -30,14 +30,16 @@ jobs:
           sudo apt-get install -y microsoft-edge-stable
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.14'
 
       - name: Install dependencies
         run: |
           python3 -m pip install --upgrade pip
-          pip install pandas DrissionPage
+          pip install pandas DrissionPage pyvirtualdisplay
+          sudo apt-get update
+          sudo apt-get install -y xvfb libxi6 libgconf-2-4 libxrender1 libxtst6 libnss3 libasound2
 
       - name: Run Crawler Script
         # [关键路径修改] 因为脚本在 Crawler 文件夹下
