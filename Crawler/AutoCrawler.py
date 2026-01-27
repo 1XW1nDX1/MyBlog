@@ -131,6 +131,11 @@ def process_data(raw_data):
         return f"{dev}-{gen}", dev, capacity
 
     df['category'], df['device_type'], df['capacity'] = zip(*df.apply(get_info, axis=1))
+    
+    # 新增逻辑：计算单价并过滤无效容量
+    df = df[df['capacity'] > 0].copy()
+    df['unit_price'] = df['price'] / df['capacity']
+    
     return df
 
 # ================= 💾 存储逻辑 =================
@@ -221,14 +226,35 @@ category: "价格日报"
 <script is:inline src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script is:inline set:html={{`{js_logic}`}}></script>
 
-## 📋 最低价榜单
-| 排名 | 商品 | 规格 | 价格 |
-| :--- | :--- | :--- | :--- |
 """
-    top3 = df_today_raw.sort_values('price').head(3)
-    for i, (_, row) in enumerate(top3.iterrows()):
-        mdx_content += f"| {i+1} | [{row['title']}]({row['link']}) | {row['category']}/{row['capacity']}G | **¥{row['price']}** |\n"
+    # ------------------- 消费级 Top 3 -------------------
+    mdx_content += """
+## 📋 消费级最具性价比Top3 (DDR4/DDR5)
+| 排名 | 商品 | 规格 | 价格 | 单价 |
+| :--- | :--- | :--- | :--- | :--- |
+"""
+    # 筛选：非服务器，且包含DDR4或DDR5
+    cons_mask = (df_today_raw['device_type'] != '服务器') & (df_today_raw['category'].str.contains('DDR'))
+    top3_cons = df_today_raw[cons_mask].sort_values('unit_price').head(3)
     
+    for i, (_, row) in enumerate(top3_cons.iterrows()):
+        unit_str = f"¥{row['unit_price']:.2f}/G"
+        mdx_content += f"| {i+1} | [{row['title']}]({row['link']}) | {row['category']}/{row['capacity']}G | **¥{row['price']}** | {unit_str} |\n"
+
+    # ------------------- 服务器级 Top 3 -------------------
+    mdx_content += """
+## 📋 服务器最具性价比Top3 (DDR4/DDR5)
+| 排名 | 商品 | 规格 | 价格 | 单价 |
+| :--- | :--- | :--- | :--- | :--- |
+"""
+    # 筛选：是服务器，且包含DDR4或DDR5
+    serv_mask = (df_today_raw['device_type'] == '服务器') & (df_today_raw['category'].str.contains('DDR'))
+    top3_serv = df_today_raw[serv_mask].sort_values('unit_price').head(3)
+
+    for i, (_, row) in enumerate(top3_serv.iterrows()):
+        unit_str = f"¥{row['unit_price']:.2f}/G"
+        mdx_content += f"| {i+1} | [{row['title']}]({row['link']}) | {row['category']}/{row['capacity']}G | **¥{row['price']}** | {unit_str} |\n"
+
     with open(BLOG_POST_PATH, 'w', encoding='utf-8') as f:
         f.write(mdx_content)
     print(f"✅ 任务完成。博客已生成在: {BLOG_POST_PATH}")
